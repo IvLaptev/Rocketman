@@ -1,0 +1,18 @@
+{
+	"countOfThreads": "2",
+	"host": "192.168.1.36",
+	"port": "3001",
+
+	"redisHost" : "127.0.0.1",
+	"redisPort": "6379",
+
+	"dbHost": "127.0.0.1",
+	"dbPort": "3307",
+	"dbName": "todolist",
+	"dbUser": "root",
+	"dbPass": "root666",
+
+	"sessionSecret": "2hbdBvrzjDVcxIw0iZn5CY6wfM52JMoa5LFBSsOC41TnzZb81qcWT7FzFXLP",
+
+	"router": "192.168.1.36:3000"
+}

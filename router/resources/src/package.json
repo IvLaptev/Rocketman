@@ -1,0 +1,15 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "frontend",
+  "main": "main.js",
+  "scripts": {
+    "build": "webpack"
+  },
+  "author": "ILaptev",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  }
+}
