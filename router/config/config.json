@@ -1,0 +1,18 @@
+{
+	"countOfThreads": "2",
+	"host": "192.168.1.36",
+	"port": "3000",
+	"indexPage": "/resources/index.html",
+	"mainScript": "/resources/src/build/bundle.js",
+	"icon": "/resources/img/favicon.ico",
+	"rm_dark": "/resources/img/rm_dark.png",
+	"rm_light": "/resources/img/rm_light.png",
+	"style": "/resources/style.css",
+
+	"taskServHosts": [
+		{ "host": "192.168.1.36:3001" }
+	],
+	"stateServHosts": [
+		{ "host": "192.168.1.36:3002" }
+	]
+}
