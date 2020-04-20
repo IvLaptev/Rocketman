@@ -4,7 +4,7 @@ const session = require('express-session');
 const fs = require('fs');
 const config = require('./config.json');
 const methods = require('./serviceFunctions');
-const sessionStorage = require('./sessionStorage');
+const sessionStorage = require('./sessionStorage'); // Запуск хранилища Redis
 
 const service = express();
 
@@ -37,7 +37,6 @@ service.use(function(request, response) {
 
 		if (request.body.method === 'isAuthorized') {
 			body.result = { authorized: request.session.authorized };
-			console.log(body);
 			response.send(body);
 		}
 
@@ -45,29 +44,28 @@ service.use(function(request, response) {
 			let nonAuthoryzed = request.body.method === 'logIn' || request.body.method === 'signUp';
 			if (request.session.authorized === true || nonAuthoryzed) {
 				request.body.params.userId = request.session.user;	// Добавление к телу запрося номера пользователя
-
-				if (methods.checkParams[request.body.method](request.body.params)) {	// Проверка наличия необходимых параметров
-					method(request.body.params).then(result => {	// Выполнение запрашиваемого метода
+				
+				// Проверка наличия необходимых параметров
+				if (methods.checkParams[request.body.method](request.body.params)) {
+					// Выполнение запрашиваемого метода
+					method(request.body.params).then(result => {
 						if (request.body.method === 'logIn') {
 							request.session.authorized = result.authorized;
 							request.session.user = result.userId;
 							result.userId = undefined;
 						}
 						body.result = result;
-						console.log(result);
 						response.send(body);
 					});
 				}
 				else{
 					body.error = { code: -32602, message: 'Invalid params'};
-					console.error(body);
-					response.send(body);				
+					response.send(body);
 				}
 			}
 			else {
 				body.error = { code: -1, message: 'Not authorized'};
-				console.error(body);
-				response.send(body);				
+				response.send(body);
 			}
 		}
 
@@ -80,11 +78,10 @@ service.use(function(request, response) {
 	}
 
 	else {
-		response.send(); // TODO: Return to task list
+		response.send();
 	}
 })
 
 service.listen(config.port, function() {
 	console.log(`Server is running (port: ${config.port})`);
-	console.log(methods.a);
 });

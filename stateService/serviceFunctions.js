@@ -2,6 +2,7 @@ const mysql = require('mysql2');
 const request = require('request-promise');
 const config = require('./config.json');
 
+// Подключение к базе данных
 const database = mysql.createConnection({
 	//connectionLimit: 5,
 	host: config.dbHost,
@@ -11,18 +12,26 @@ const database = mysql.createConnection({
 	password: config.dbPass
 }).promise();
 
+/*
+* Набор базовых функций сервиса, которые также представляют его API
+* params - набор параметров, различный для каждой функции, целостность которого
+*		   проверяется в checkParams
+*/
 const functions = {
+	/*
+	* Функция получения статусов заданий по их номерам
+	*/
 	getStates: async function(params) {
 		var result;
 
 		var conditions = `s.task_id IN (${params.taskIds.join(',')})`;
 
-		await database.query(`SELECT states.task_id, states.state, states.change_date
-							  FROM states 
-							  RIGHT JOIN (SELECT task_id, MAX(state_id) AS state_id FROM states GROUP BY task_id) s
-							  ON states.state_id = s.state_id
-							  WHERE ${conditions}
-							  ORDER BY states.task_id DESC;`)
+		await database.query(`SELECT states.task_id, states.state, states.change_date` +
+							 ` FROM states` +
+							 ` RIGHT JOIN (SELECT task_id, MAX(state_id) AS state_id FROM states GROUP BY task_id) s` +
+							 ` ON states.state_id = s.state_id` +
+							 ` WHERE ${conditions}` +
+							 ` ORDER BY states.task_id DESC;`)
 			.then(([data, fields]) => {
 				result = data;
 			})
@@ -32,6 +41,7 @@ const functions = {
 			});
 		return {states: result};
 	},
+	// Функция изменения статуса задания
 	updateState: async function(params) {
 		var result;
 		await database.query(`INSERT states(task_id, state, change_date)
@@ -45,6 +55,7 @@ const functions = {
 			});
 		return result;
 	},
+	// Проверить адрес запроса 
 	validateHost: async function(params) {
 		console.log('1');
 		result = false;

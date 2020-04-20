@@ -5,6 +5,11 @@ var taskHosts;
 var stateHosts;
 
 const functions = {
+	/*
+	* Получение адреса основных сервисов
+	* При параметре count = 1 передаёт только адрес stateService,
+	* при count = 2 - и stateService, и taskService
+	*/
 	getHost: function(params) {
 		var host = [];
 
@@ -19,6 +24,7 @@ const functions = {
 
 		return {host: host};
 	},
+	// Обновление рабочих адресов
 	refreshHosts: function() {
 		let newHosts = JSON.parse(fs.readFileSync('./config/hosts.json'));
 
@@ -26,6 +32,7 @@ const functions = {
 		taskHosts = newHosts.taskHosts;
 		stateHosts = newHosts.stateHosts;
 	},
+	// Исключение адреса из списка доступных
 	removeHost: function(params) {
 		let host;
 		if (params.type === 'task') {
@@ -56,6 +63,7 @@ const functions = {
 		}
 		return {host: host};
 	},
+	// Проверить, является адрес рабочим или посторонним
 	validateHost: function(params) {
 		let hosts = taskHosts.join(':');
 		if (hosts.indexOf(params.host) != -1)

@@ -1,3 +1,7 @@
+/*
+*	Подключение к Redis
+*/
+
 const session = require('express-session');
 const redisStorage = require('connect-redis')(session);
 const redis = require('redis');
@@ -13,4 +17,4 @@ module.exports = new redisStorage({
 	port: config.redisPort,
 	client: client,
 	ttl: 3600000
-})
+});

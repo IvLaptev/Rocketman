@@ -5,7 +5,8 @@ const bcrypt = require('bcryptjs');
 
 var url;								// Адрес stateService
 
-let reqOptions = {						// Параметры запроса router
+// Параметры запроса router
+let reqOptions = {						
 	uri: 'http://' + config.router,
 	method: 'POST',
 	body: {
@@ -25,7 +26,8 @@ request(reqOptions)						// Получение адреса taskService
 		console.log(err);
 	});
 
-const database = mysql.createConnection({	// Подключение к базе данных
+// Подключение к базе данных
+const database = mysql.createConnection({
 	//connectionLimit: 5,
 	host: config.dbHost,
 	port: config.dbPort,
@@ -93,12 +95,13 @@ const functions = {
 		if (!wrongData) {
 			await database.query(`SELECT user_id, password FROM users WHERE login='${params.login}';`)
 				.then(([data, fields]) => {
-					if (data[0] != undefined) { 
-						if (params.needSalt === true) {		// Ветвь отправки соли
+					if (data[0] != undefined) {
+						// Ветвь отправки соли
+						if (params.needSalt === true) {
 							result = { salt: data[0].password.slice(0,29) };
 						}
-
-						else {								// Ветвь валидации пароля
+						// Ветвь валидации пароля
+						else {
 							console.log(bcrypt.compareSync(data[0].password, params.password));
 							if (bcrypt.compareSync(data[0].password, params.password)) 
 								result = {
@@ -115,7 +118,8 @@ const functions = {
 		}
 		return result;	// Отправка ошибки ввода логина при использзовании спецсимволов
 	},
-	getStates: async function(params) {		// Получение статусов заданий из stateService
+	// Получение статусов заданий из stateService
+	getStates: async function(params) {
 		var result = {};
 		await request(params)
 			.then(body => {
@@ -138,20 +142,20 @@ const functions = {
 	getTasks: async function(params) {
 		var result = {};
 
-		var conditions = `user_id=${params.userId} AND is_archived=${params.archived}`;	// Формирование запроса
-		if (params.filter != undefined) {												// с учётом фильтра
+		// Формирование запроса с учётом фильтра
+		var conditions = `user_id=${params.userId} AND is_archived=${params.archived}`;
+		if (params.filter != undefined) {
 			if (params.filter.startDate != undefined) {
 				conditions = conditions + ` AND creation_date BETWEEN '${params.filter.startDate}' AND '${params.filter.endDate}'`;
 			}
 		}
 
-		await database.query(`SELECT *
-							  FROM tasks
-							  WHERE ${conditions}
-							  ORDER BY task_id DESC;`)
+		await database.query(`SELECT *` +
+							 ` FROM tasks` +
+							 ` WHERE ${conditions}` +
+							 ` ORDER BY task_id DESC;`)
 			.then(([data, fields]) => {
 				result.tasks = data;
-				
 			})
 			.catch(err => {
 				console.log(err);
@@ -163,7 +167,8 @@ const functions = {
 			taskIds.push(task.task_id);
 		})
 
-		var stateReqOptions = {	// Формирование запроса к stateService
+		// Формирование запроса к stateService
+		var stateReqOptions = {
 			uri: 'http://' + url,
 			method: 'POST',
 			body: {
@@ -188,8 +193,9 @@ const functions = {
                     result.states.push(state);
                 }
             });
-
-            if (result.states[j] === undefined) {	// Заполнение задач для которых нет статуса
+			
+			// Заполнение задач для которых нет статуса
+            if (result.states[j] === undefined) {	
                 result.states.push({
                     task_id: task.task_id,
                     state: -1,
@@ -198,12 +204,11 @@ const functions = {
             }
         });
 
+        // Удаление лишних записей при наличии фильтра по статусу
         if (params.filter != undefined) {
         	if (params.filter.state != undefined) {
         		for (var i = 0; i < result.states.length; i++) {
-        			console.log(result.states[i].state, params.filter.state);
         			if (result.states[i].state != params.filter.state && result.states[i].state != -1) {
-        				console.log('OK')
         				result.states.splice(i, 1);
         				result.tasks.splice(i, 1);
         				i--;
@@ -214,16 +219,16 @@ const functions = {
 
 		return result;
 	},
-	isExist: async function(params) {	// Проверка наличия задания с введённым названием, созданного в этот же день
-		var result = {};	
-		await database.query(`SELECT *
-							  FROM tasks
-							  WHERE user_id=${params.userId} AND name='${params.name}' AND creation_date='${params.date}';`)
+	// Проверка наличия задания с введённым названием, созданного в этот же день
+	isExist: async function(params) {
+		var result = {};
+		await database.query(`SELECT *` +
+							 ` FROM tasks` +
+							 ` WHERE user_id=${params.userId} AND name='${params.name}' AND creation_date='${params.date}';`)
 			.then(([data, fields]) => {
 				if (data[0] === undefined) 
 					result = {status: 'OK'}			// Задание с таким же названием отсутствует
 				else {
-					console.log(data[0])
 					result = {status: 'EXISTING'}	// Задание с таким же названием уже было создано за этот день
 				}
 			})
@@ -240,14 +245,14 @@ const functions = {
 	createTask: async function(params) {
 		var result = {id: 0};	// Создание задания
 		await database.query(`INSERT tasks(user_id, name, description, creation_date)` +	
-							  `VALUES(${params.userId}, "${params.name}", "${params.description}", "${params.date}");`)
+							 ` VALUES(${params.userId}, "${params.name}", "${params.description}", "${params.date}");`)
 			.catch(err => {
 				console.log(err);
 			});
 		// Получение номера задания
-		await database.query(`SELECT task_id ` +	
-							  `FROM tasks ` +
-							  `WHERE user_id=${params.userId} AND name='${params.name}' AND creation_date='${params.date}'`)
+		await database.query(`SELECT task_id` +
+							 ` FROM tasks` +
+							 ` WHERE user_id=${params.userId} AND name='${params.name}' AND creation_date='${params.date}'`)
 			.then(([data, fields]) => {
 				if (data[0] != undefined)
 				result.id = data[0].task_id;
@@ -327,7 +332,6 @@ var checkParams = {
 			var correctDate = true;
 
 			if (params.filter) {
-				console.log('jhhj')
 				if (params.filter.state != undefined)
 					correctState = params.filter.state === '0' || params.filter.state === '1';
 				if (params.filter.startDate != undefined)

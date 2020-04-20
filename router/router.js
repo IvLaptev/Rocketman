@@ -2,14 +2,7 @@ const express = require('express');
 const config = require('./config/config.json');
 const methods = require('./routerFunctions.js');
 
-var staticPaths = {
-	'/': config.indexPage,
-	'/main.js': config.mainScript,
-	'/favicon.ico': config.icon,
-	'/light_logo': config.rm_light,
-	'/dark_logo': config.rm_dark,
-	'/style.css': config.style
-}
+var staticPaths = config.pages;
 
 const router = express(); 
 
@@ -41,13 +34,13 @@ router.get('/style.css', function(request, response) {
 router.use(express.json(), function(request, response, next) {
 	if (staticPaths[request.url] === undefined) {
 		if (request.url === '/refresh') {
+			// Обновление адресов taskService и stateService
 			methods.refreshHosts();
 		}
-		response.redirect(301, '/');
+		response.redirect(301, '/');	// Перенаправление недействительных URL
 	}
 
 	else if (request.headers['content-type'].indexOf('application/json') != -1) {
-		console.log(request.headers.accept);
 		let method = methods[request.body.method];
 
 		var body = {
@@ -57,12 +50,10 @@ router.use(express.json(), function(request, response, next) {
 
 		if (method != undefined) {
 			body.result = method(request.body.params);
-			console.log(request.body.method + ' ' + request.body.params + ' ' + body.result);
 		}
 
 		else {
 			body.error = { code: -32601, message: 'Method not found'};
-			console.error('undefined');
 		}
 		response.send(body);
 
