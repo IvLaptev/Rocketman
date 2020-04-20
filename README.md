@@ -14,8 +14,8 @@ To-do сервис
 
 ## Инструкция по запуску
 1. Настроить конфигурационные файлы, внести в них адреса всех копий task service и state service
-2. Запустить базы mysql
-3. Запустить базу redis
+2. Запустить базы mysql (скрипты создания баз [taskService](docs/DB%20scripts/task.sql) и [stateService](docs/DB%20scripts/task.sql))
+3. Запустить базу redis (команда redis-server)
 4. Запустить router (в командной строке из директории router выполнить node index.js)
 5. Запустить все копии task service и state service той же командой, находясь в соответствующих директориях.
 
